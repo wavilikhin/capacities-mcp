@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CapacitiesApiClient } from "./capacities-client.js";
 import { loadCapacitiesConfig } from "./config.js";
+import { registerMutationTools } from "./mutation-tools.js";
 import { registerReadQueryTools } from "./read-query-tools.js";
 
 async function main(): Promise<void> {
@@ -16,6 +17,7 @@ async function main(): Promise<void> {
   });
 
   registerReadQueryTools(server, { client, config });
+  registerMutationTools(server, { config });
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
