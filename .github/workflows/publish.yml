@@ -1,0 +1,72 @@
+name: Publish to npm
+
+# Required repository configuration:
+# - Secrets: NPM_TOKEN (npm automation token with publish rights for capacities-mcp)
+# - Workflow permissions: Contents (read)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Validate tag matches package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          echo "package.json version: ${PKG_VERSION}"
+          echo "git tag version:     ${TAG_VERSION}"
+
+          if [ "${PKG_VERSION}" != "${TAG_VERSION}" ]; then
+            echo "Tag v${TAG_VERSION} does not match package.json version ${PKG_VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Validate package name
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+
+          if [ "${PKG_NAME}" != "capacities-mcp" ]; then
+            echo "Expected package name capacities-mcp, got ${PKG_NAME}" >&2
+            exit 1
+          fi
+
+      - name: Ensure version not already published
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "${PKG_NAME}@${PKG_VERSION} is already published" >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Validate package tarball contents
+        run: npm pack --dry-run
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
