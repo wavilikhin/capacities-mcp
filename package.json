@@ -1,5 +1,5 @@
 {
-  "name": "capacities-mcp",
+  "name": "@wavilikhin/capacities-mcp",
   "version": "0.1.0",
   "description": "MCP stdio server for Capacities API",
   "license": "MIT",
