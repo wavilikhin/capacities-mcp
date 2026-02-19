@@ -66,39 +66,3 @@ If you run from local source instead of npm:
   }
 }
 ```
-
-## Manual Publish
-
-Run from repository root:
-
-```bash
-npm run build
-npm pack --dry-run
-npm publish
-```
-
-Current root package metadata:
-
-- `"name": "capacities-mcp"`
-- `bin` points to built CLI entrypoint (for `npx capacities-mcp`)
-- `"publishConfig": { "access": "public" }`
-
-## Auto-Publish by Tag (GitHub Actions)
-
-Expected release flow:
-
-1. Configure repository secret `NPM_TOKEN`.
-2. Ensure `package.json` version matches tag (workflow enforces this).
-3. Create and push a `v*` release tag:
-
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Workflow file: `.github/workflows/publish.yml`
-
-- Triggers on `push.tags: "v*"` (and manual `workflow_dispatch`)
-- Verifies package name is `capacities-mcp`
-- Verifies version is not already published
-- Runs `npm ci`, `npm run build`, `npm pack --dry-run`, then `npm publish`
