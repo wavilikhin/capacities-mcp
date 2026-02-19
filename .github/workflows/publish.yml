@@ -1,9 +1,5 @@
 name: Publish to npm
 
-# Required repository configuration:
-# - Secrets: NPM_TOKEN (npm automation token with publish rights for capacities-mcp)
-# - Workflow permissions: Contents (read)
-
 on:
   push:
     tags:
@@ -15,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,7 +63,5 @@ jobs:
       - name: Validate package tarball contents
         run: npm pack --dry-run
 
-      - name: Publish to npm
+      - name: Publish to npm (OIDC Trusted Publishing)
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
