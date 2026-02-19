@@ -1,33 +1,29 @@
-# mcp-capacities-server
+# capacities-mcp
 
 TypeScript MCP stdio server for the Capacities public API.
-
-## Goal
-
-Provide MCP tools for Capacities space info and entity search, with explicit deterministic unsupported responses for operations not exposed by the current public API.
 
 ## Requirements
 
 - Node.js 20+
 - npm
-- Capacities API token
-- Optional default space UUID
+- `CAPACITIES_API_TOKEN` (required)
+- `CAPACITIES_SPACE_ID` (optional default space UUID)
 
-## Configuration
+## Install
 
-Set env vars before start:
-
-- `CAPACITIES_API_TOKEN` (required): bearer token for `https://api.capacities.io`
-- `CAPACITIES_SPACE_ID` (optional): default space UUID used when a tool input omits `spaceId`
-
-Example:
+From npm (package consumers):
 
 ```bash
-export CAPACITIES_API_TOKEN="<token>"
-export CAPACITIES_SPACE_ID="11111111-1111-4111-8111-111111111111"
+npm install capacities-mcp
 ```
 
-## Setup and Run
+Run without local install:
+
+```bash
+npx -y capacities-mcp
+```
+
+From source (this repository root):
 
 ```bash
 npm install
@@ -35,43 +31,74 @@ npm run build
 npm run start
 ```
 
-Notes:
-- Transport is stdio only.
-- `npm run start` is intended to be launched by an MCP client over stdio.
-- If started directly without a client (stdin EOF), process exits cleanly.
+## MCP Usage by AI Agents
 
-## Tool Behavior and API Limits
+Example MCP client config (stdio):
 
-Implemented tools:
+```json
+{
+  "mcpServers": {
+    "capacities": {
+      "command": "npx",
+      "args": ["-y", "capacities-mcp"],
+      "env": {
+        "CAPACITIES_API_TOKEN": "YOUR_TOKEN",
+        "CAPACITIES_SPACE_ID": "OPTIONAL_SPACE_UUID"
+      }
+    }
+  }
+}
+```
 
-- `get_space_info`
-- `search_entities`
-- `get_entity_by_id`
-- `list_tasks`
-- `create_task`
-- `update_task`
-- `complete_task`
+If you run from local source instead of npm:
 
-Supported behavior:
+```json
+{
+  "mcpServers": {
+    "capacities": {
+      "command": "node",
+      "args": ["dist/index.js"],
+      "env": {
+        "CAPACITIES_API_TOKEN": "YOUR_TOKEN",
+        "CAPACITIES_SPACE_ID": "OPTIONAL_SPACE_UUID"
+      }
+    }
+  }
+}
+```
 
-- `get_space_info` calls `/space-info`.
-- `search_entities` calls `/lookup` and supports:
-  - required `text` search
-  - optional best-effort `type` mapping via `/space-info`
-  - accepted but non-filtering `date` / `dateFrom` / `dateTo` inputs (informational only)
+## Manual Publish
 
-Unsupported due to current public API limits (deterministic explicit `supported: false` result):
+Run from repository root:
 
-- `get_entity_by_id`
-- `list_tasks`
-- `create_task`
-- `update_task`
-- `complete_task`
+```bash
+npm run build
+npm pack --dry-run
+npm publish
+```
 
-Current documented Capacities public endpoints:
+Current root package metadata:
 
-- `/spaces`
-- `/space-info`
-- `/lookup`
-- `/save-weblink`
-- `/save-to-daily-note`
+- `"name": "capacities-mcp"`
+- `bin` points to built CLI entrypoint (for `npx capacities-mcp`)
+- `"publishConfig": { "access": "public" }`
+
+## Auto-Publish by Tag (GitHub Actions)
+
+Expected release flow:
+
+1. Configure repository secret `NPM_TOKEN`.
+2. Ensure `package.json` version matches tag (workflow enforces this).
+3. Create and push a `v*` release tag:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Workflow file: `.github/workflows/publish.yml`
+
+- Triggers on `push.tags: "v*"` (and manual `workflow_dispatch`)
+- Verifies package name is `capacities-mcp`
+- Verifies version is not already published
+- Runs `npm ci`, `npm run build`, `npm pack --dry-run`, then `npm publish`
