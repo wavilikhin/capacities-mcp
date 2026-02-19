@@ -1,0 +1,28 @@
+{
+  "name": "@wavilikhin/capacities-mcp",
+  "version": "0.1.0",
+  "description": "MCP stdio server for Capacities API",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "capacities-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
