@@ -39,8 +39,8 @@ jobs:
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
 
-          if [ "${PKG_NAME}" != "capacities-mcp" ]; then
-            echo "Expected package name capacities-mcp, got ${PKG_NAME}" >&2
+          if [ "${PKG_NAME}" != "@wavilikhin/capacities-mcp" ]; then
+            echo "Expected package name @wavilikhin/capacities-mcp, got ${PKG_NAME}" >&2
             exit 1
           fi
 
